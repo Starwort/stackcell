@@ -10,11 +10,11 @@ Recommended file extension: `.cel`
 
 ## The stack
 
-The stack is a list of unsigned bytes. The stack is initially empty, and attempting to read elements from an empty stack will give a zero.
+The stack is a list of (wrapping) unsigned bytes. The stack is initially empty, and attempting to read elements from an empty stack will give a zero.
 
 ## The Cell
 
-The cell contains a single unsigned byte. Initially it contains the value 0, but can be written to to overwrite its value. When it is read from, its value is not cleared.
+The cell contains a single (wrapping) unsigned byte. Initially it contains the value 0, but can be written to to overwrite its value. When it is read from, its value is not cleared.
 
 ## Commands
 
