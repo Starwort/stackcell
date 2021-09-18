@@ -1,3 +1,4 @@
+#![feature(destructuring_assignment)]
 use std::io::{stdin, stdout, Write};
 
 use types::Computer;

@@ -12,7 +12,8 @@ pub fn unhex(c: u8) -> Result<u8, String> {
 pub struct Computer {
     pub tape: Vec<u8>,
     pub position: usize,
-    pub memory: Vec<Wrapping<u8>>,
+    pub primary: Vec<Wrapping<u8>>,
+    pub secondary: Vec<Wrapping<u8>>,
     pub io_reader: io::Stdin,
     pub running: bool,
     pub cell: Wrapping<u8>,
@@ -23,7 +24,8 @@ impl Computer {
         Computer {
             tape: tape.bytes().collect(),
             position: 0,
-            memory: vec![],
+            primary: vec![],
+            secondary: vec![],
             io_reader: io::stdin(),
             running: true,
             cell: Wrapping(0),
@@ -31,7 +33,7 @@ impl Computer {
     }
 
     pub fn get(&mut self) -> Wrapping<u8> {
-        return match self.memory.pop() {
+        return match self.primary.pop() {
             Some(value) => value,
             None => Wrapping(0),
         };
@@ -54,13 +56,13 @@ impl Computer {
         match instruction {
             b'\'' => {
                 let val = Wrapping(self.read_tape()? as u8);
-                self.memory.push(val);
+                self.primary.push(val);
                 self.position += 1;
             }
             b'"' => {
                 while self.read_tape()? != b'"' {
                     let val = Wrapping(self.read_tape()? as u8);
-                    self.memory.push(val);
+                    self.primary.push(val);
                     self.position += 1;
                 }
                 self.position += 1;
@@ -70,7 +72,7 @@ impl Computer {
                 self.position += 1;
                 let d1 = unhex(self.read_tape()?)?;
                 self.position += 1;
-                self.memory.push(Wrapping(d0 * 16 + d1));
+                self.primary.push(Wrapping(d0 * 16 + d1));
             }
             b'1'..=b'9' => {
                 self.position += unhex(instruction)? as usize;
@@ -138,8 +140,8 @@ impl Computer {
             }
             b':' => {
                 let val = self.get();
-                self.memory.push(val);
-                self.memory.push(val);
+                self.primary.push(val);
+                self.primary.push(val);
             }
             b'`' => {
                 self.get();
@@ -148,78 +150,83 @@ impl Computer {
                 self.cell = self.get();
             }
             b'}' => {
-                self.memory.push(self.cell);
+                self.primary.push(self.cell);
             }
             b'x' => {
                 let a = self.get();
                 let b = self.get();
-                self.memory.push(a);
-                self.memory.push(b);
+                self.primary.push(a);
+                self.primary.push(b);
+            }
+            b'X' => {
+                std::mem::swap(&mut self.primary, &mut self.secondary);
             }
             b'!' => {
                 let val = self.get();
-                self.memory
+                self.primary
                     .push(Wrapping(if val == Wrapping(0) { 1 } else { 0 }));
             }
             b'<' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(Wrapping(if left < right { 1 } else { 0 }));
+                self.primary
+                    .push(Wrapping(if left < right { 1 } else { 0 }));
             }
             b'>' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(Wrapping(if left > right { 1 } else { 0 }));
+                self.primary
+                    .push(Wrapping(if left > right { 1 } else { 0 }));
             }
             b'=' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory
+                self.primary
                     .push(Wrapping(if left == right { 1 } else { 0 }));
             }
             b'+' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(left + right);
+                self.primary.push(left + right);
             }
             b'-' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(left - right);
+                self.primary.push(left - right);
             }
             b'*' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(left * right);
+                self.primary.push(left * right);
             }
             b'/' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(left / right);
+                self.primary.push(left / right);
             }
             b'%' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(left % right);
+                self.primary.push(left % right);
             }
             b'^' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(left ^ right);
+                self.primary.push(left ^ right);
             }
             b'&' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(left & right);
+                self.primary.push(left & right);
             }
             b'|' => {
                 let left = self.get();
                 let right = self.get();
-                self.memory.push(left | right);
+                self.primary.push(left | right);
             }
             b'~' => {
                 let val = self.get();
-                self.memory.push(!val);
+                self.primary.push(!val);
             }
             b'?' => {
                 let val = self.get();
@@ -235,7 +242,7 @@ impl Computer {
                 self.io_reader
                     .read_line(&mut buf)
                     .map_err(|e| e.to_string())?;
-                self.memory.push(Wrapping(buf.as_bytes()[0] as u8));
+                self.primary.push(Wrapping(buf.as_bytes()[0] as u8));
             }
             _ => return Err(format!("Unknown instruction: {:?}", instruction as char)),
         }
