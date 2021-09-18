@@ -1,6 +1,8 @@
 # StackCell
 
-*StackCell* is an esoteric programming language which consists of two stacks of integers and some commands to manipulate it. You also get a single cell which can be written to and read from as much as you like.
+*StackCell* is an esoteric programming language which consists of two stacks of integers and some commands to manipulate them. You also get a single cell which can be written to and read from as much as you like.
+
+*StackCell* is turing complete: `bf_to_cel.py` can compile any program written in [the turing tarpit BF](https://esolangs.org/wiki/Brainfuck) into *StackCell*.
 
 The interpreter can either take a filename as an argument, or programs can be entered into an interactive interface.
 
@@ -32,7 +34,7 @@ The cell contains a single unsigned byte. Initially it contains the value 0, but
 | `}`                     | Copies the value of the cell on to the primary stack                                                                                                                         | `}`                     |
 | `` ` ``                 | Discards the top value of the primary stack with no other side-effects                                                                                                       | ``#42` ``               |
 | `x`                     | Swaps the top two values of the primary stack                                                                                                                                | `'a'bx`                 |
-| `X`                     | Swaps the primary and secondary stacks                                                                                                                                       | `s`                     |
+| `X`                     | Swaps the primary and secondary stacks                                                                                                                                       | `X`                     |
 | `!`                     | Logically negates the top value of the primary stack[<sup>[4]</sup>](#footnote-4)                                                                                            | `#42!`                  |
 | `<`                     | Compares the top two values[<sup>[6]</sup>](#footnote-6) of the primary stack[<sup>[5]</sup>](#footnote-5) and return 1 if the first is less than the second, otherwise 0    | `#42#42<`               |
 | `>`                     | Compares the top two values[<sup>[6]</sup>](#footnote-6) of the primary stack[<sup>[5]</sup>](#footnote-5) and return 1 if the first is greater than the second, otherwise 0 | `#42#42>`               |
