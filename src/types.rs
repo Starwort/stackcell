@@ -1,4 +1,7 @@
-use std::{io, num::Wrapping};
+use std::{
+    io::{self, Read},
+    num::Wrapping,
+};
 
 pub fn unhex(c: u8) -> Result<u8, String> {
     return match c {
@@ -238,11 +241,13 @@ impl Computer {
                 print!("{}", self.get().0 as char);
             }
             b'@' => {
-                let mut buf = String::new();
-                self.io_reader
-                    .read_line(&mut buf)
-                    .map_err(|e| e.to_string())?;
-                self.primary.push(Wrapping(buf.as_bytes()[0] as u8));
+                let mut buf = [0u8];
+                let result = self.io_reader.read(&mut buf).map_err(|e| e.to_string())?;
+                if result == 0 {
+                    self.primary.push(Wrapping(0));
+                } else {
+                    self.primary.push(Wrapping(buf[0]));
+                }
             }
             _ => return Err(format!("Unknown instruction: {:?}", instruction as char)),
         }
