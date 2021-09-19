@@ -128,14 +128,14 @@ A quine is a program which prints its own source.
 The quine family is a quine which prints its own source; moreover, its source contains a jump which can be any valid jump.
 
 ```
-"[#22;:[{X}X:]X:[:{X}X;:]#22;#3A;#5D;1":]
+"[#22;:[{X}X:]X:[;:]#22;#3A;#5D;1":]
 ```
 
-- `"[#22;:[{X}X:]X:[:{X}X;:]#22;#3A;#5D;1"`: Push the program code onto the primary stack.
+- `"[#22;:[{X}X:]X:[;:]#22;#3A;#5D;1"`: Push the program code onto the primary stack.
 - `:]`: Duplicate the `'1` character, then jump back to the `[` character at the start of the program code.
 - `#22;`: Print `"`.
 - `:[{X}X:]X`: Reverse the primary stack onto the secondary stack, then swap the primary and secondary stacks.
-- `:[:{X}X;:]`: Print the secondary stack, while also reversing it onto the first one.
+- `:[;:]`: Print the contents of the primary stack.
 - `#22;#3A;#5D;`: Print `":]`.
 - `1"`: Skip the `"` character. This `1` can be changed to any valid jump (`1` to `9`) without changing the behaviour of the program.
 - `:]`: Duplicate a zero, and terminate the loop.
