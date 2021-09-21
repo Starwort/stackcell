@@ -3,6 +3,11 @@ use std::{
     num::Wrapping,
 };
 
+#[cfg(feature = "u32")]
+type CellSize = u32;
+#[cfg(not(feature = "u32"))]
+type CellSize = u8;
+
 pub fn unhex(c: u8) -> Result<u8, String> {
     return match c {
         b'0'..=b'9' => Ok(c - b'0'),
@@ -15,11 +20,11 @@ pub fn unhex(c: u8) -> Result<u8, String> {
 pub struct Computer {
     pub tape: Vec<u8>,
     pub position: usize,
-    pub primary: Vec<Wrapping<u8>>,
-    pub secondary: Vec<Wrapping<u8>>,
+    pub primary: Vec<Wrapping<CellSize>>,
+    pub secondary: Vec<Wrapping<CellSize>>,
     pub io_reader: io::Stdin,
     pub running: bool,
-    pub cell: Wrapping<u8>,
+    pub cell: Wrapping<CellSize>,
 }
 
 impl Computer {
@@ -35,7 +40,7 @@ impl Computer {
         }
     }
 
-    pub fn get(&mut self) -> Wrapping<u8> {
+    pub fn get(&mut self) -> Wrapping<CellSize> {
         return match self.primary.pop() {
             Some(value) => value,
             None => Wrapping(0),
@@ -58,13 +63,13 @@ impl Computer {
         self.position += 1;
         match instruction {
             b'\'' => {
-                let val = Wrapping(self.read_tape()? as u8);
+                let val = Wrapping(self.read_tape()? as CellSize);
                 self.primary.push(val);
                 self.position += 1;
             }
             b'"' => {
                 while self.read_tape()? != b'"' {
-                    let val = Wrapping(self.read_tape()? as u8);
+                    let val = Wrapping(self.read_tape()? as CellSize);
                     self.primary.push(val);
                     self.position += 1;
                 }
@@ -75,7 +80,7 @@ impl Computer {
                 self.position += 1;
                 let d1 = unhex(self.read_tape()?)?;
                 self.position += 1;
-                self.primary.push(Wrapping(d0 * 16 + d1));
+                self.primary.push(Wrapping((d0 * 16 + d1) as CellSize));
             }
             b'1'..=b'9' => {
                 self.position += unhex(instruction)? as usize;
@@ -238,7 +243,7 @@ impl Computer {
                 }
             }
             b';' => {
-                print!("{}", self.get().0 as char);
+                print!("{}", self.get().0 as u8 as char);
             }
             b'@' => {
                 let mut buf = [0u8];
@@ -246,7 +251,7 @@ impl Computer {
                 if result == 0 {
                     self.primary.push(Wrapping(0));
                 } else {
-                    self.primary.push(Wrapping(buf[0]));
+                    self.primary.push(Wrapping(buf[0] as CellSize));
                 }
             }
             _ => return Err(format!("Unknown instruction: {:?}", instruction as char)),
