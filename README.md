@@ -1,6 +1,6 @@
 # StackCell
 
-*StackCell* is an esoteric programming language which consists of two stacks of integers and some commands to manipulate them. You also get a single cell which can be written to and read from as much as you like.
+*StackCell* is an esoteric programming language that consists of two stacks of integers and some commands to manipulate them. You also get a single cell which can be written to and read from as much as you like.
 
 *StackCell* is turing complete: `bf_to_cel.py` can compile any program written in [the turing tarpit BF](https://esolangs.org/wiki/Brainfuck) into *StackCell*.
 
@@ -14,15 +14,15 @@ The stack is a list of (wrapping) unsigned bytes. The stack is initially empty, 
 
 ## The Cell
 
-The cell contains a single (wrapping) unsigned byte. Initially it contains the value 0, but can be written to to overwrite its value. When it is read from, its value is not cleared.
+The cell contains a single (wrapping) unsigned byte. Initially, it contains the value 0, but can be written to to overwrite its value. When it is read from, its value is not cleared.
 
 ## Commands
 
 | Command                 | Effect                                                                                                                                                                       | Example                 |
-| ------------------------| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `'`                     | Pushes a character to the primary stack[<sup>[1]</sup>](#footnote-1)                                                                                                                                      | `'a`                    |
-| `"`                     | Pushes a string to the primary stack[<sup>[1]</sup>](#footnote-1)[<sup>[2]</sup>](#footnote-2)                                                                                                            | `"!dlrow olleH"`        |
-| `#`                     | Pushes a byte to the primary stack[<sup>[1]</sup>](#footnote-1)[<sup>[3]</sup>](#footnote-3)                                                                                                              | `#42`                   |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `'`                     | Pushes a character to the primary stack[<sup>[1]</sup>](#footnote-1)                                                                                                         | `'a`                    |
+| `"`                     | Pushes a string to the primary stack[<sup>[1]</sup>](#footnote-1)[<sup>[2]</sup>](#footnote-2)                                                                               | `"!dlrow olleH"`        |
+| `#`                     | Pushes a byte to the primary stack[<sup>[1]</sup>](#footnote-1)[<sup>[3]</sup>](#footnote-3)                                                                                 | `#42`                   |
 | Numeral from `1` to `9` | Skips the number of characters specified                                                                                                                                     | `'0@-:?6'0+;.:[:'0+;:]` |
 | `[`                     | Starts a zero-sentinel loop[<sup>[4]</sup>](#footnote-4)                                                                                                                     | `:[;:]`                 |
 | `]`                     | Ends a zero-sentinel loop[<sup>[4]</sup>](#footnote-4)                                                                                                                       | `:[;:]`                 |
