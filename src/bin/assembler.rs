@@ -7,7 +7,7 @@ fn parse_char_literal(lexer: &mut Lexer<Token>) -> String {
 
 fn parse_decimal_literal(lexer: &mut Lexer<Token>) -> String {
     let value = lexer.slice().trim_start_matches("#");
-    return format!("#{:2x}", value.parse::<u8>().unwrap());
+    return format!("#{:02x}", value.parse::<u8>().unwrap());
 }
 
 fn parse_hex_literal(lexer: &mut Lexer<Token>) -> String {
