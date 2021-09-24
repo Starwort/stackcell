@@ -448,7 +448,7 @@ enum Token {
     #[regex(r"b[01][01][01][01][01][01][01][01]", parse_binary_literal)]
     #[regex(r"'.'", parse_char_literal)]
     Literal(String),
-    #[regex(r#""[^"]*""#, |v| v.slice().chars().rev().collect::<String>())]
+    #[regex(r#""[^"]*""#, |v| v.slice().to_string())]
     StringLiteral(String),
     #[token("out")]
     #[token("pri")]
@@ -469,6 +469,8 @@ enum Token {
     Comment,
     #[regex(r"[ \t\n\f]+", logos::skip)]
     Whitespace,
+    #[token("embed")]
+    EmbeddedCode,
     #[error]
     #[regex(r"\w+", priority = 0)]
     Error,
@@ -597,7 +599,9 @@ fn main() -> Result<(), String> {
                     }
                     Token::Push => match lexer.next() {
                         Some(Token::Literal(val)) => program.push_str(&val),
-                        Some(Token::StringLiteral(val)) => program.push_str(&val),
+                        Some(Token::StringLiteral(val)) => {
+                            program.push_str(&val.chars().rev().collect::<String>())
+                        }
                         Some(_) => {
                             return Err(format!("Expected literal but found {:?}", _lexer.slice()));
                         }
@@ -629,6 +633,20 @@ fn main() -> Result<(), String> {
                     Token::LoadFromCell => program.push_str("}"),
                     Token::Comment => {}
                     Token::Whitespace => {}
+                    Token::EmbeddedCode => match lexer.next() {
+                        Some(Token::StringLiteral(code)) => {
+                            program.push_str(code.trim_matches('"'));
+                        }
+                        Some(_) => {
+                            return Err(format!(
+                                "Expected embedded code but found {:?}",
+                                _lexer.slice()
+                            ));
+                        }
+                        None => {
+                            return Err(format!("Expected embedded code but found EOF"));
+                        }
+                    },
                     Token::Error => {
                         return Err(format!("Found invalid token {:?}", _lexer.slice()))
                     }
