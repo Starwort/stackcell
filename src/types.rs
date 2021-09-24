@@ -1,5 +1,5 @@
 use std::{
-    io::{self, Read},
+    io::{self, stdout, Read, Write},
     num::Wrapping,
 };
 
@@ -244,6 +244,7 @@ impl Computer {
             }
             b';' => {
                 print!("{}", self.get().0 as u8 as char);
+                stdout().flush().unwrap();
             }
             b'@' => {
                 let mut buf = [0u8];
