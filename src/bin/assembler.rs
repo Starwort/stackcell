@@ -443,7 +443,7 @@ enum Token {
     JumpDistance(u8),
     #[token("push")]
     Push,
-    #[regex(r"#2\d\d|#[1-9]\d|#\d", parse_decimal_literal)]
+    #[regex(r"#[12]\d\d|#[1-9]\d|#\d", parse_decimal_literal)]
     #[regex(r"\$[0-9a-fA-F][0-9a-fA-F]", parse_hex_literal)]
     #[regex(r"b[01][01][01][01][01][01][01][01]", parse_binary_literal)]
     #[regex(r"'.'", parse_char_literal)]
