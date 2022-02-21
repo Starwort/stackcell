@@ -137,5 +137,5 @@ The quine family is a quine which prints its own source; moreover, its source co
 - `:[{X}X:]X`: Reverse the primary stack onto the secondary stack, then swap the primary and secondary stacks.
 - `:[;:]`: Print the contents of the primary stack.
 - `#22;#3A;#5D;`: Print `":]`.
-- `1"`: Skip the `"` character. This `1` can be changed to any valid jump (`1` to `9`) without changing the behaviour of the program.
+- `1"`: Skip the `"` character. This `1` can be changed to any valid jump (`1` to `9`, or `?`) without changing the behaviour of the program.
 - `:]`: Duplicate a zero, and terminate the loop.
