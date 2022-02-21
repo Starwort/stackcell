@@ -10,23 +10,23 @@ fn main() -> Result<(), String> {
     match args.next() {
         Some(program) => {
             let tape = std::fs::read_to_string(program).expect("File not found");
-            match Computer::new(tape.as_str()).run() {
-                Err(e) => println!("Error: {}", e),
-                _ => {}
+            if let Err(e) = Computer::new(tape.as_str()).run() {
+                println!("Error: {}", e)
             }
-            return Ok(());
-        }
-        None => loop {
-            print!("Enter program\n>>> ");
-            stdout().flush().unwrap();
-            let input = stdin();
-            let mut tape = String::new();
-            input.read_line(&mut tape).map_err(|e| e.to_string())?;
-            match Computer::new(tape.trim()).run() {
-                Err(e) => println!("Error: {}", e),
-                _ => {}
-            }
-            println!();
+            Ok(())
         },
-    };
+        None => {
+            loop {
+                print!("Enter program\n>>> ");
+                stdout().flush().unwrap();
+                let input = stdin();
+                let mut tape = String::new();
+                input.read_line(&mut tape).map_err(|e| e.to_string())?;
+                if let Err(e) = Computer::new(tape.trim()).run() {
+                    println!("Error: {}", e)
+                }
+                println!();
+            }
+        },
+    }
 }

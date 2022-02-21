@@ -1,28 +1,31 @@
+use std::fs::File;
+use std::io::Read;
+
 use logos::{Lexer, Logos};
-use std::{fs::File, io::Read};
 
 fn parse_char_literal(lexer: &mut Lexer<Token>) -> String {
-    return format!("'{}", lexer.slice().chars().nth(1).unwrap());
+    format!("'{}", lexer.slice().chars().nth(1).unwrap())
 }
 
 fn parse_decimal_literal(lexer: &mut Lexer<Token>) -> String {
-    let value = lexer.slice().trim_start_matches("#");
-    return format!("#{:02x}", value.parse::<u8>().unwrap());
+    let value = lexer.slice().trim_start_matches('#');
+    format!("#{:02x}", value.parse::<u8>().unwrap())
 }
 
 fn parse_hex_literal(lexer: &mut Lexer<Token>) -> String {
-    let value = lexer.slice().replace("$", "#");
-    return value;
+    lexer.slice().replace('$', "#")
 }
 
 fn parse_binary_literal(lexer: &mut Lexer<Token>) -> String {
-    let value = lexer.slice().trim_start_matches("b");
-    return format!("#{:2x}", u8::from_str_radix(&value.to_string(), 2).unwrap());
+    let value = lexer.slice().trim_start_matches('b');
+    format!("#{:2x}", u8::from_str_radix(value, 2).unwrap())
 }
 
 macro_rules! handle_symmetric_binary_op {
     ($lexer:ident, $program:ident, $op:literal) => {
-        if let Some(Token::Target(a)) = $lexer.next_if(|token| matches!(token, Token::Target(_))) {
+        if let Some(Token::Target(a)) =
+            $lexer.next_if(|token| matches!(token, Token::Target(_)))
+        {
             if let Some(Token::Target(b)) =
                 $lexer.next_if(|token| matches!(token, Token::Target(_)))
             {
@@ -31,50 +34,51 @@ macro_rules! handle_symmetric_binary_op {
                     ("p1", "s1") => {
                         $program.push_str("X}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("p1", "s2") => {
                         $program.push_str("Xx}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("p2", "p1") => $program.push_str($op),
                     ("p2", "s1") => {
                         $program.push_str("xX}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("p2", "s2") => {
                         $program.push_str("xXx}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s1", "p1") => {
                         $program.push_str("X}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s1", "p2") => {
                         $program.push_str("xX}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s1", "s2") => {
                         $program.push_str("X");
                         $program.push_str($op);
                         $program.push_str("}x{X}X{X");
-                    }
+                    },
                     ("s2", "p1") => {
                         $program.push_str("Xx}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s2", "p2") => {
                         $program.push_str("xXx}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s2", "s1") => {
                         $program.push_str("X");
                         $program.push_str($op);
                         $program.push_str("}x{X}X{X");
-                    }
+                    },
                     (a, b) => {
                         if a == b {
                             return Err(format!(
-                                "Bad operation: {:?} {} {:?} - left may not be the same as right (consider duplicating)",
+                                "Bad operation: {:?} {} {:?} - left may not be the \
+                             same as right (consider duplicating)",
                                 a, $op, a
                             ));
                         } else {
@@ -83,7 +87,7 @@ macro_rules! handle_symmetric_binary_op {
                                 a, b
                             ));
                         }
-                    }
+                    },
                 }
             } else if let Some(Token::Literal(b)) =
                 $lexer.next_if(|token| matches!(token, Token::Literal(_)))
@@ -92,25 +96,28 @@ macro_rules! handle_symmetric_binary_op {
                     "p1" => {
                         $program.push_str(&b);
                         $program.push_str($op);
-                    }
+                    },
                     "p2" => {
                         $program.push_str("x");
                         $program.push_str(&b);
                         $program.push_str($op);
-                    }
+                    },
                     "s1" => {
                         $program.push_str("X}x{X}X{X");
                         $program.push_str(&b);
                         $program.push_str($op);
-                    }
+                    },
                     "s2" => {
                         $program.push_str("Xx}x{X}X{X");
                         $program.push_str(&b);
                         $program.push_str($op);
-                    }
+                    },
                     _ => {
-                        return Err(format!("Found target {:?} but failed to match it", a));
-                    }
+                        return Err(format!(
+                            "Found target {:?} but failed to match it",
+                            a
+                        ));
+                    },
                 }
             } else {
                 match a.as_str() {
@@ -119,21 +126,24 @@ macro_rules! handle_symmetric_binary_op {
                             "Bad operation: p1 (explicit) {} p1 (implicit)",
                             $op
                         ));
-                    }
+                    },
                     "p2" => {
                         $program.push_str($op);
-                    }
+                    },
                     "s1" => {
                         $program.push_str("X}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     "s2" => {
                         $program.push_str("Xx}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     _ => {
-                        return Err(format!("Found target {:?} but failed to match it", a));
-                    }
+                        return Err(format!(
+                            "Found target {:?} but failed to match it",
+                            a
+                        ));
+                    },
                 }
             }
         } else if let Some(Token::Literal(a)) =
@@ -146,25 +156,28 @@ macro_rules! handle_symmetric_binary_op {
                     "p1" => {
                         $program.push_str(&a);
                         $program.push_str($op);
-                    }
+                    },
                     "p2" => {
                         $program.push_str("x");
                         $program.push_str(&a);
                         $program.push_str($op);
-                    }
+                    },
                     "s1" => {
                         $program.push_str("X}x{X}X{X");
                         $program.push_str(&a);
                         $program.push_str($op);
-                    }
+                    },
                     "s2" => {
                         $program.push_str("Xx}x{X}X{X");
                         $program.push_str(&a);
                         $program.push_str($op);
-                    }
+                    },
                     _ => {
-                        return Err(format!("Found target {:?} but failed to match it", b));
-                    }
+                        return Err(format!(
+                            "Found target {:?} but failed to match it",
+                            b
+                        ));
+                    },
                 }
             } else if let Some(Token::Literal(b)) =
                 $lexer.next_if(|token| matches!(token, Token::Literal(_)))
@@ -184,7 +197,9 @@ macro_rules! handle_symmetric_binary_op {
 
 macro_rules! handle_asymmetric_binary_op {
     ($lexer:ident, $program:ident, $op:literal) => {
-        if let Some(Token::Target(a)) = $lexer.next_if(|token| matches!(token, Token::Target(_))) {
+        if let Some(Token::Target(a)) =
+            $lexer.next_if(|token| matches!(token, Token::Target(_)))
+        {
             if let Some(Token::Target(b)) =
                 $lexer.next_if(|token| matches!(token, Token::Target(_)))
             {
@@ -193,53 +208,54 @@ macro_rules! handle_asymmetric_binary_op {
                     ("p1", "s1") => {
                         $program.push_str("X}x{X}X{Xx");
                         $program.push_str($op);
-                    }
+                    },
                     ("p1", "s2") => {
                         $program.push_str("Xx}x{X}X{Xx");
                         $program.push_str($op);
-                    }
+                    },
                     ("p2", "p1") => {
                         $program.push_str("x");
                         $program.push_str($op);
-                    }
+                    },
                     ("p2", "s1") => {
                         $program.push_str("xX}x{X}X{Xx");
                         $program.push_str($op);
-                    }
+                    },
                     ("p2", "s2") => {
                         $program.push_str("xXx}x{X}X{Xx");
                         $program.push_str($op);
-                    }
+                    },
                     ("s1", "p1") => {
                         $program.push_str("X}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s1", "p2") => {
                         $program.push_str("xX}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s1", "s2") => {
                         $program.push_str("X");
                         $program.push_str($op);
                         $program.push_str("}x{X}X{X");
-                    }
+                    },
                     ("s2", "p1") => {
                         $program.push_str("Xx}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s2", "p2") => {
                         $program.push_str("xXx}x{X}X{X");
                         $program.push_str($op);
-                    }
+                    },
                     ("s2", "s1") => {
                         $program.push_str("Xx");
                         $program.push_str($op);
                         $program.push_str("}x{X}X{X");
-                    }
+                    },
                     (a, b) => {
                         if a == b {
                             return Err(format!(
-                                "Bad operation: {:?} {} {:?} - left may not be the same as right (consider duplicating)",
+                                "Bad operation: {:?} {} {:?} - left may not be the \
+                             same as right (consider duplicating)",
                                 a, $op, a
                             ));
                         } else {
@@ -248,7 +264,7 @@ macro_rules! handle_asymmetric_binary_op {
                                 a, b
                             ));
                         }
-                    }
+                    },
                 }
             } else if let Some(Token::Literal(b)) =
                 $lexer.next_if(|token| matches!(token, Token::Literal(_)))
@@ -258,28 +274,31 @@ macro_rules! handle_asymmetric_binary_op {
                         $program.push_str(&b);
                         $program.push_str("x");
                         $program.push_str($op);
-                    }
+                    },
                     "p2" => {
                         $program.push_str("x");
                         $program.push_str(&b);
                         $program.push_str("x");
                         $program.push_str($op);
-                    }
+                    },
                     "s1" => {
                         $program.push_str("X}x{X}X{X");
                         $program.push_str(&b);
                         $program.push_str("x");
                         $program.push_str($op);
-                    }
+                    },
                     "s2" => {
                         $program.push_str("Xx}x{X}X{X");
                         $program.push_str(&b);
                         $program.push_str("x");
                         $program.push_str($op);
-                    }
+                    },
                     _ => {
-                        return Err(format!("Found target {:?} but failed to match it", a));
-                    }
+                        return Err(format!(
+                            "Found target {:?} but failed to match it",
+                            a
+                        ));
+                    },
                 }
             } else {
                 match a.as_str() {
@@ -288,21 +307,24 @@ macro_rules! handle_asymmetric_binary_op {
                             "Bad operation: p1 (implicit) {} p1 (explicit)",
                             $op
                         ));
-                    }
+                    },
                     "p2" => {
                         $program.push_str($op);
-                    }
+                    },
                     "s1" => {
                         $program.push_str("X}x{X}X{Xx");
                         $program.push_str($op);
-                    }
+                    },
                     "s2" => {
                         $program.push_str("Xx}x{X}X{Xx");
                         $program.push_str($op);
-                    }
+                    },
                     _ => {
-                        return Err(format!("Found target {:?} but failed to match it", a));
-                    }
+                        return Err(format!(
+                            "Found target {:?} but failed to match it",
+                            a
+                        ));
+                    },
                 }
             }
         } else if let Some(Token::Literal(a)) =
@@ -315,25 +337,28 @@ macro_rules! handle_asymmetric_binary_op {
                     "p1" => {
                         $program.push_str(&a);
                         $program.push_str($op);
-                    }
+                    },
                     "p2" => {
                         $program.push_str("x");
                         $program.push_str(&a);
                         $program.push_str($op);
-                    }
+                    },
                     "s1" => {
                         $program.push_str("X}x{X}X{X");
                         $program.push_str(&a);
                         $program.push_str($op);
-                    }
+                    },
                     "s2" => {
                         $program.push_str("Xx}x{X}X{X");
                         $program.push_str(&a);
                         $program.push_str($op);
-                    }
+                    },
                     _ => {
-                        return Err(format!("Found target {:?} but failed to match it", b));
-                    }
+                        return Err(format!(
+                            "Found target {:?} but failed to match it",
+                            b
+                        ));
+                    },
                 }
             } else if let Some(Token::Literal(b)) =
                 $lexer.next_if(|token| matches!(token, Token::Literal(_)))
@@ -354,26 +379,28 @@ macro_rules! handle_asymmetric_binary_op {
 
 macro_rules! handle_unary_op {
     ($lexer:ident, $program:ident, $op:literal) => {
-        if let Some(Token::Target(a)) = $lexer.next_if(|token| matches!(token, Token::Target(_))) {
+        if let Some(Token::Target(a)) =
+            $lexer.next_if(|token| matches!(token, Token::Target(_)))
+        {
             match a.as_str() {
                 "p1" => {
                     $program.push_str($op);
-                }
+                },
                 "p2" => {
                     $program.push_str("x");
                     $program.push_str($op);
-                }
+                },
                 "s1" => {
                     $program.push_str("X}x{X}X{X");
                     $program.push_str($op);
-                }
+                },
                 "s2" => {
                     $program.push_str("Xx}x{X}X{X");
                     $program.push_str($op);
-                }
+                },
                 _ => {
                     return Err(format!("Found target {:?} but failed to match it", a));
-                }
+                },
             }
         } else if let Some(Token::Literal(a)) =
             $lexer.next_if(|token| matches!(token, Token::Literal(_)))
@@ -469,8 +496,8 @@ enum Token {
     Comment,
     #[regex(r"[ \t\n\f]+", logos::skip)]
     Whitespace,
-    #[token("embed")]
-    EmbeddedCode,
+    #[token("raw")]
+    RawCode,
     #[error]
     #[regex(r"\w+", priority = 0)]
     Error,
@@ -482,8 +509,8 @@ fn main() -> Result<(), String> {
     match args.next() {
         None => {
             println!("Usage: {} <file>", name);
-            return Ok(());
-        }
+            Ok(())
+        },
         Some(arg) => {
             let mut f = File::open(arg).map_err(|e| e.to_string())?;
             let mut out = String::new();
@@ -494,168 +521,216 @@ fn main() -> Result<(), String> {
             while let Some(token) = lexer.next() {
                 match token {
                     Token::Add => handle_symmetric_binary_op!(lexer, program, "+"),
-                    Token::Subtract => handle_asymmetric_binary_op!(lexer, program, "-"),
+                    Token::Subtract => {
+                        handle_asymmetric_binary_op!(lexer, program, "-")
+                    },
                     Token::Multiply => handle_symmetric_binary_op!(lexer, program, "*"),
                     Token::Divide => handle_asymmetric_binary_op!(lexer, program, "/"),
                     Token::Modulo => handle_asymmetric_binary_op!(lexer, program, "%"),
                     Token::BitwiseNegate => handle_unary_op!(lexer, program, "~"),
                     Token::LogicalNot => handle_unary_op!(lexer, program, "!"),
-                    Token::BitwiseAnd => handle_symmetric_binary_op!(lexer, program, "&"),
-                    Token::BitwiseOr => handle_symmetric_binary_op!(lexer, program, "|"),
-                    Token::BitwiseXor => handle_symmetric_binary_op!(lexer, program, "^"),
+                    Token::BitwiseAnd => {
+                        handle_symmetric_binary_op!(lexer, program, "&")
+                    },
+                    Token::BitwiseOr => {
+                        handle_symmetric_binary_op!(lexer, program, "|")
+                    },
+                    Token::BitwiseXor => {
+                        handle_symmetric_binary_op!(lexer, program, "^")
+                    },
                     Token::Equal => handle_symmetric_binary_op!(lexer, program, "="),
                     Token::Less => handle_asymmetric_binary_op!(lexer, program, "<"),
                     Token::Greater => handle_asymmetric_binary_op!(lexer, program, ">"),
-                    Token::LoopStart => match lexer.next() {
-                        Some(Token::LoopConditionNotZero) => {
-                            program.push_str("[");
-                        }
-                        Some(Token::LoopConditionZero) => {
-                            program.push_str("(");
-                        }
-                        Some(_) => {
-                            return Err(format!(
-                                "Expected loop condition but found {:?}",
-                                _lexer.slice()
-                            ));
-                        }
-                        None => {
-                            return Err(format!("Expected loop condition but found EOF"));
+                    Token::LoopStart => {
+                        match lexer.next() {
+                            Some(Token::LoopConditionNotZero) => {
+                                program.push('[');
+                            },
+                            Some(Token::LoopConditionZero) => {
+                                program.push('(');
+                            },
+                            Some(_) => {
+                                return Err(format!(
+                                    "Expected loop condition but found {:?}",
+                                    _lexer.slice()
+                                ));
+                            },
+                            None => {
+                                return Err(
+                                    "Expected loop condition but found EOF".to_string()
+                                );
+                            },
                         }
                     },
                     Token::LoopConditionNotZero => {
                         return Err(format!(
-                            "Found unexpected loop condition {:?} while searching for a mnemonic",
+                            "Found unexpected loop condition {:?} while searching for \
+                             a mnemonic",
                             _lexer.slice()
                         ))
-                    }
+                    },
                     Token::LoopConditionZero => {
                         return Err(format!(
-                            "Found unexpected loop condition {:?} while searching for a mnemonic",
+                            concat!(
+                                "Found unexpected loop condition {:?} while searching",
+                                " for a mnemonic",
+                            ),
                             _lexer.slice()
                         ))
-                    }
-                    Token::LoopContinue => match lexer.next() {
-                        Some(Token::LoopConditionNotZero) => {
-                            program.push_str("]");
-                        }
-                        Some(Token::LoopConditionZero) => {
-                            program.push_str(")");
-                        }
-                        Some(_) => {
-                            return Err(format!(
-                                "Expected loop condition but found {:?}",
-                                _lexer.slice()
-                            ));
-                        }
-                        None => {
-                            return Err(format!("Expected loop condition but found EOF"));
+                    },
+                    Token::LoopContinue => {
+                        match lexer.next() {
+                            Some(Token::LoopConditionNotZero) => {
+                                program.push(']');
+                            },
+                            Some(Token::LoopConditionZero) => {
+                                program.push(')');
+                            },
+                            Some(_) => {
+                                return Err(format!(
+                                    "Expected loop condition but found {:?}",
+                                    _lexer.slice()
+                                ));
+                            },
+                            None => {
+                                return Err(
+                                    "Expected loop condition but found EOF".to_string()
+                                );
+                            },
                         }
                     },
                     Token::Duplicate => handle_unary_op!(lexer, program, ":"),
                     Token::Drop => handle_unary_op!(lexer, program, "`"),
-                    Token::Swap => match lexer.next() {
-                        Some(Token::SwapValues) => program.push_str("x"),
-                        Some(Token::SwapStacks) => program.push_str("X"),
-                        Some(_) => {
-                            return Err(format!(
-                                "Expected swap type but found {:?}",
-                                _lexer.slice()
-                            ));
-                        }
-                        None => {
-                            return Err(format!("Expected swap type but found EOF"));
+                    Token::Swap => {
+                        match lexer.next() {
+                            Some(Token::SwapValues) => program.push('x'),
+                            Some(Token::SwapStacks) => program.push('X'),
+                            Some(_) => {
+                                return Err(format!(
+                                    "Expected swap type but found {:?}",
+                                    _lexer.slice()
+                                ));
+                            },
+                            None => {
+                                return Err(
+                                    "Expected swap type but found EOF".to_string()
+                                );
+                            },
                         }
                     },
                     Token::SwapValues => {
                         return Err(format!(
-                            "Found unexpected swap type {:?} while searching for a mnemonic",
+                            "Found unexpected swap type {:?} while searching for a \
+                             mnemonic",
                             _lexer.slice()
                         ))
-                    }
+                    },
                     Token::SwapStacks => {
                         return Err(format!(
-                            "Found unexpected swap type {:?} while searching for a mnemonic",
+                            "Found unexpected swap type {:?} while searching for a \
+                             mnemonic",
                             _lexer.slice()
                         ))
-                    }
+                    },
                     Token::Conditional => handle_unary_op!(lexer, program, "?"),
-                    Token::Jump => match lexer.next() {
-                        Some(Token::JumpDistance(distance)) => {
-                            program.push_str(&distance.to_string());
-                        }
-                        Some(a) => {
-                            return Err(format!("Expected jump distance but found {:?}", a));
-                        }
-                        None => {
-                            return Err(format!("Expected jump distance but found EOF"));
+                    Token::Jump => {
+                        match lexer.next() {
+                            Some(Token::JumpDistance(distance)) => {
+                                program.push_str(&distance.to_string());
+                            },
+                            Some(a) => {
+                                return Err(format!(
+                                    "Expected jump distance but found {:?}",
+                                    a
+                                ));
+                            },
+                            None => {
+                                return Err(
+                                    "Expected jump distance but found EOF".to_string()
+                                );
+                            },
                         }
                     },
                     Token::JumpDistance(dist) => {
                         return Err(format!(
-                            "Found unexpected jump distance {} while searching for a mnemonic",
+                            "Found unexpected jump distance {} while searching for a \
+                             mnemonic",
                             dist
                         ))
-                    }
-                    Token::Push => match lexer.next() {
-                        Some(Token::Literal(val)) => program.push_str(&val),
-                        Some(Token::StringLiteral(val)) => {
-                            program.push_str(&val.chars().rev().collect::<String>())
-                        }
-                        Some(_) => {
-                            return Err(format!("Expected literal but found {:?}", _lexer.slice()));
-                        }
-                        None => {
-                            return Err(format!("Expected literal but found EOF"));
+                    },
+                    Token::Push => {
+                        match lexer.next() {
+                            Some(Token::Literal(val)) => program.push_str(&val),
+                            Some(Token::StringLiteral(val)) => {
+                                program.push_str(&val.chars().rev().collect::<String>())
+                            },
+                            Some(_) => {
+                                return Err(format!(
+                                    "Expected literal but found {:?}",
+                                    _lexer.slice()
+                                ));
+                            },
+                            None => {
+                                return Err(
+                                    "Expected literal but found EOF".to_string()
+                                );
+                            },
                         }
                     },
                     Token::Literal(val) => {
                         return Err(format!(
-                            "Found unexpected literal {} while searching for a mnemonic",
+                            "Found unexpected literal {} while searching for a \
+                             mnemonic",
                             val
                         ))
-                    }
+                    },
                     Token::StringLiteral(val) => {
                         return Err(format!(
-                            "Found unexpected string literal {:?} while searching for a mnemonic",
+                            "Found unexpected string literal {:?} while searching for \
+                             a mnemonic",
                             val
                         ))
-                    }
+                    },
                     Token::Target(target) => {
                         return Err(format!(
-                            "Found unexpected target {:?} while searching for a mnemonic",
+                            "Found unexpected target {:?} while searching for a \
+                             mnemonic",
                             target
                         ))
-                    }
+                    },
                     Token::Print => handle_unary_op!(lexer, program, ";"),
-                    Token::Input => program.push_str("@"),
+                    Token::Input => program.push('@'),
                     Token::MoveToCell => handle_unary_op!(lexer, program, "{"),
-                    Token::LoadFromCell => program.push_str("}"),
-                    Token::Comment => {}
-                    Token::Whitespace => {}
-                    Token::EmbeddedCode => match lexer.next() {
-                        Some(Token::StringLiteral(code)) => {
-                            program.push_str(code.trim_matches('"'));
-                        }
-                        Some(_) => {
-                            return Err(format!(
-                                "Expected embedded code but found {:?}",
-                                _lexer.slice()
-                            ));
-                        }
-                        None => {
-                            return Err(format!("Expected embedded code but found EOF"));
+                    Token::LoadFromCell => program.push('}'),
+                    Token::Comment => {},
+                    Token::Whitespace => {},
+                    Token::RawCode => {
+                        match lexer.next() {
+                            Some(Token::StringLiteral(code)) => {
+                                program.push_str(code.trim_matches('"'));
+                            },
+                            Some(_) => {
+                                return Err(format!(
+                                    "Expected raw code but found {:?}",
+                                    _lexer.slice()
+                                ));
+                            },
+                            None => {
+                                return Err(
+                                    "Expected raw code but found EOF".to_string()
+                                );
+                            },
                         }
                     },
                     Token::Error => {
                         return Err(format!("Found invalid token {:?}", _lexer.slice()))
-                    }
+                    },
                 }
             }
 
             println!("{}", program);
 
-            return Ok(());
-        }
+            Ok(())
+        },
     }
 }

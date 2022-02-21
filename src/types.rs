@@ -1,7 +1,5 @@
-use std::{
-    io::{self, stdout, Read, Write},
-    num::Wrapping,
-};
+use std::io::{self, stdout, Read, Write};
+use std::num::Wrapping;
 
 #[cfg(feature = "u32")]
 type CellSize = u32;
@@ -41,23 +39,23 @@ impl Computer {
     }
 
     pub fn get(&mut self) -> Wrapping<CellSize> {
-        return match self.primary.pop() {
+        match self.primary.pop() {
             Some(value) => value,
             None => Wrapping(0),
-        };
+        }
     }
 
     pub fn read_tape(&mut self) -> Result<u8, String> {
         if self.position >= self.tape.len() {
-            return Err(format!("Indexed out of bounds!"));
+            Err("Indexed out of bounds!".to_string())
         } else {
-            return Ok(self.tape[self.position]);
+            Ok(self.tape[self.position])
         }
     }
 
     pub fn step(&mut self) -> Result<(), String> {
         if !self.running {
-            return Err(format!("Computer is not running!"));
+            return Err("Computer is not running!".to_string());
         }
         let instruction = self.read_tape()?;
         self.position += 1;
@@ -66,7 +64,7 @@ impl Computer {
                 let val = Wrapping(self.read_tape()? as CellSize);
                 self.primary.push(val);
                 self.position += 1;
-            }
+            },
             b'"' => {
                 while self.read_tape()? != b'"' {
                     let val = Wrapping(self.read_tape()? as CellSize);
@@ -74,17 +72,17 @@ impl Computer {
                     self.position += 1;
                 }
                 self.position += 1;
-            }
+            },
             b'#' => {
                 let d0 = unhex(self.read_tape()?)?;
                 self.position += 1;
                 let d1 = unhex(self.read_tape()?)?;
                 self.position += 1;
                 self.primary.push(Wrapping((d0 * 16 + d1) as CellSize));
-            }
+            },
             b'1'..=b'9' => {
                 self.position += unhex(instruction)? as usize;
-            }
+            },
             b'[' => {
                 if self.get() == Wrapping(0) {
                     let mut depth = 0;
@@ -98,7 +96,7 @@ impl Computer {
                     }
                     self.position += 1;
                 }
-            }
+            },
             b']' => {
                 if self.get() != Wrapping(0) {
                     let mut depth = 0;
@@ -113,7 +111,7 @@ impl Computer {
                     }
                     self.position += 1;
                 }
-            }
+            },
             b'(' => {
                 if self.get() != Wrapping(0) {
                     let mut depth = 0;
@@ -127,7 +125,7 @@ impl Computer {
                     }
                     self.position += 1;
                 }
-            }
+            },
             b')' => {
                 if self.get() != Wrapping(0) {
                     let mut depth = 0;
@@ -142,128 +140,129 @@ impl Computer {
                     }
                     self.position += 1;
                 }
-            }
+            },
             b'.' => {
                 self.running = false;
-            }
+            },
             b':' => {
                 let val = self.get();
                 self.primary.push(val);
                 self.primary.push(val);
-            }
+            },
             b'`' => {
                 self.get();
-            }
+            },
             b'{' => {
                 self.cell = self.get();
-            }
+            },
             b'}' => {
                 self.primary.push(self.cell);
-            }
+            },
             b'x' => {
                 let a = self.get();
                 let b = self.get();
                 self.primary.push(a);
                 self.primary.push(b);
-            }
+            },
             b'X' => {
                 std::mem::swap(&mut self.primary, &mut self.secondary);
-            }
+            },
             b'!' => {
                 let val = self.get();
                 self.primary
                     .push(Wrapping(if val == Wrapping(0) { 1 } else { 0 }));
-            }
+            },
             b'<' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary
                     .push(Wrapping(if left < right { 1 } else { 0 }));
-            }
+            },
             b'>' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary
                     .push(Wrapping(if left > right { 1 } else { 0 }));
-            }
+            },
             b'=' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary
                     .push(Wrapping(if left == right { 1 } else { 0 }));
-            }
+            },
             b'+' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary.push(left + right);
-            }
+            },
             b'-' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary.push(left - right);
-            }
+            },
             b'*' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary.push(left * right);
-            }
+            },
             b'/' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary.push(left / right);
-            }
+            },
             b'%' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary.push(left % right);
-            }
+            },
             b'^' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary.push(left ^ right);
-            }
+            },
             b'&' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary.push(left & right);
-            }
+            },
             b'|' => {
                 let left = self.get();
                 let right = self.get();
                 self.primary.push(left | right);
-            }
+            },
             b'~' => {
                 let val = self.get();
                 self.primary.push(!val);
-            }
+            },
             b'?' => {
                 let val = self.get();
                 if val == Wrapping(0) {
                     self.position += 1;
                 }
-            }
+            },
             b';' => {
                 print!("{}", self.get().0 as u8 as char);
                 stdout().flush().unwrap();
-            }
+            },
             b'@' => {
                 let mut buf = [0u8];
-                let result = self.io_reader.read(&mut buf).map_err(|e| e.to_string())?;
+                let result =
+                    self.io_reader.read(&mut buf).map_err(|e| e.to_string())?;
                 if result == 0 {
                     self.primary.push(Wrapping(0));
                 } else {
                     self.primary.push(Wrapping(buf[0] as CellSize));
                 }
-            }
+            },
             _ => return Err(format!("Unknown instruction: {:?}", instruction as char)),
         }
-        return Ok(());
+        Ok(())
     }
 
     pub fn run(&mut self) -> Result<(), String> {
         while self.position < self.tape.len() && self.running {
             self.step()?;
         }
-        return Ok(());
+        Ok(())
     }
 }
