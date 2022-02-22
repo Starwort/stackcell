@@ -127,7 +127,7 @@ impl Computer {
                 }
             },
             b')' => {
-                if self.get() != Wrapping(0) {
+                if self.get() == Wrapping(0) {
                     let mut depth = 0;
                     self.position -= 2;
                     while depth != 0 || self.read_tape()? != b'(' {
