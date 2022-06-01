@@ -9,8 +9,8 @@ fn main() -> Result<(), String> {
     args.next();
     match args.next() {
         Some(program) => {
-            let tape = std::fs::read_to_string(program).expect("File not found");
-            if let Err(e) = Computer::new(tape.as_str()).run() {
+            let tape = std::fs::read(program).expect("File not found");
+            if let Err(e) = Computer::new(&tape).run() {
                 println!("Error: {}", e)
             }
             Ok(())
@@ -22,7 +22,7 @@ fn main() -> Result<(), String> {
                 let input = stdin();
                 let mut tape = String::new();
                 input.read_line(&mut tape).map_err(|e| e.to_string())?;
-                if let Err(e) = Computer::new(tape.trim()).run() {
+                if let Err(e) = Computer::new(tape.trim().as_bytes()).run() {
                     println!("Error: {}", e)
                 }
                 println!();

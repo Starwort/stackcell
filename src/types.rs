@@ -26,9 +26,9 @@ pub struct Computer {
 }
 
 impl Computer {
-    pub fn new(tape: &str) -> Computer {
+    pub fn new(tape: &[u8]) -> Computer {
         Computer {
-            tape: tape.bytes().collect(),
+            tape: tape.to_vec(),
             position: 0,
             primary: vec![],
             secondary: vec![],
