@@ -1,0 +1,18 @@
+╔═════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ < PROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROGRAMPROG > ║
+╠═══════╦═════════════╤════════════╤══════╦═════════╤═════════════╦═══════╤═══════════════════════════╣
+║ Cell: ║ HE XH EX HE │ DECDECDECD │ X255 ║ Status: │ STATUSSTATU ║ File: │ < FILENAMEFILENAMEFILEN > ║
+╠═══════╩══╦══════╤═══╧══╤══════╤══╧═══╤══╩═══╤═════╧╤══════╤═════╩╤══════╪══════╤══════╤══════╤══════╣
+║ Stack A: ║ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 ║
+╠══════════╬══════╪══════╪══════╪══════╪══════╪══════╪══════╪══════╪══════╪══════╪══════╪══════╪══════╣
+║ Stack B: ║ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 │ X255 ║
+╠══════════╩══════╧══════╧══════╧══════╧══════╧══════╧══════╧══════╧══════╧══════╧══════╧══════╧══════╣
+║ OUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUT ║
+║ PUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUT ║
+║ OUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUT ║
+║ PUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUT ║
+║ OUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUT ║
+║ PUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUTOUTPUT ║
+╠════════════╦════════════════╦════════════════════╦═══════════╦════════════╦═════════════════════════╣
+║ ESC - exit ║ F2 - load file ║ F3 - enter program ║ F5 - step ║ F9 - reset ║ F10 - run at full speed ║
+╚════════════╩════════════════╩════════════════════╩═══════════╩════════════╩═════════════════════════╝
