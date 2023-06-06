@@ -9,7 +9,7 @@ use crossterm::execute;
 use crate::constants::{INPUT_BOX, TEMPLATE_BOTTOM};
 
 #[cfg(feature = "u32")]
-type CellSize = u32;
+pub(crate) type CellSize = u32;
 #[cfg(not(feature = "u32"))]
 pub(crate) type CellSize = u8;
 
@@ -191,16 +191,17 @@ impl Computer {
             },
             b'!' => {
                 let val = self.get();
-                self.primary.push(Wrapping(u8::from(val == Wrapping(0))));
+                self.primary
+                    .push(Wrapping(CellSize::from(val == Wrapping(0))));
             },
             b'<' => {
-                self.do_op(|left, right| Wrapping(u8::from(left < right)));
+                self.do_op(|left, right| Wrapping(CellSize::from(left < right)));
             },
             b'>' => {
-                self.do_op(|left, right| Wrapping(u8::from(left > right)));
+                self.do_op(|left, right| Wrapping(CellSize::from(left > right)));
             },
             b'=' => {
-                self.do_op(|left, right| Wrapping(u8::from(left == right)));
+                self.do_op(|left, right| Wrapping(CellSize::from(left == right)));
             },
             b'+' => {
                 self.do_op(|left, right| left + right);
